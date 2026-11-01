@@ -1,0 +1,29 @@
+$urls = @(
+"https://iptv-org.github.io/iptv/countries/us.m3u",
+"https://iptv-org.github.io/iptv/countries/eg.m3u",
+"https://iptv-org.github.io/iptv/regions/arab.m3u",
+"https://iptv-org.github.io/iptv/categories/sports.m3u",
+"https://iptv-org.github.io/iptv/categories/movies.m3u",
+"https://iptv-org.github.io/iptv/categories/series.m3u"
+)
+
+$parts = foreach ($url in $urls) {
+    try {
+        Write-Host "Downloading $url"
+        $data = (Invoke-WebRequest -Uri $url -UseBasicParsing).Content
+        $data -replace '^\uFEFF?#EXTM3U[^\r\n]*(\r?\n)?',''
+    }
+    catch {
+        Write-Host "Could not download: $url"
+    }
+}
+
+$playlist = "#EXTM3U`r`n" + ($parts -join "`r`n")
+
+$path = "$env:USERPROFILE\Desktop\MyMaster.m3u"
+
+[System.IO.File]::WriteAllText(
+    $path,
+    $playlist,
+    (New-Object System.Text.UTF8Encoding($false))
+)
